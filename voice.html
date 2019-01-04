@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+
+<body>
+<button id="microphone-button" onclick="recordFromMicrophone();"><span class="start">use
+            microphone</span>
+            <span class="mic-enable" style="display:none;">please enable microphone</span>
+            <span class="stop"
+            style="display:none;">(<span class="time"></span>) stop recording</span></button>
+
+    <a href="#" onclick="loadTransform(event, 'troll')">Troll</a>
+    <a href="#" onclick="loadTransform(event, 'speed', 1/4)">Speed</a>
+    <a href="#" onclick="loadTransform(event, 'pitch', 1.9)">Pitch</a>
+    <a href="#" onclick="loadTransform(event, 'autowah', 1.9)">Wah</a>
+
+    <!-- output -->
+    <section style="display:none;" class="output">
+        <div class="bg"></div>
+
+        <div class="modal">
+
+            <div onclick="closeOutputSection()" style="position:absolute;top: 1em;right: 1em;color: white;width: 1.5em;"><img
+                    style="filter:invert(100%);width: 100%;" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAYAAAAeP4ixAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAF/SURBVGhD7dk7TsNAFIVhNyDRAw1iDdCxEKBiK+yAhn3w7lgGj9Ah1sACkOAc4EgjyxM745nr62h+6SiPwplPitOkqdVqtbXrCDv+e2reJnaObf2+GhERn9gXdso3DCPiAfvGHrFkjBC8EGeJCRFaMuYE4+HDi1lguhDcG7aNJcVDW2KWIXaxUVlhiiJUaYwJQpXCmCJUbswkCJULMylCjcW4QKhUjCuEWhXjEqGGYlwjVB9mFggVw5xhs0GoLkzXXCNUH2YWCMWvUxfiA5sNInZjc+EPgOuWITT3GCLusfbB+XVq3zNuMUTcYeFhOd3YXT8A7jAxxAILb2zXmKEI5RJDxC0WHoqLIZQrDBE3WHgYjogdrC8XmBjiFRuCUJNiciHUJBgirrHwQ7kXLAWhTDEbWAmEMsGURqiiGCKusPDi3DOWE6GKYKwRKjvmEgsvxj1hJREqhjnAVm4fe8esEaqNucCSE8YaoYQZhVB7WPI/RRk6/H+s1Wq1talpfgDwXHHnhZP5QwAAAABJRU5ErkJggg=="></div>
+
+            <div class="description"></div>
+
+            <div class="loading">
+                <div class="spinner">
+                    <div class="rect1"></div>
+                    <div class="rect2"></div>
+                    <div class="rect3"></div>
+                    <div class="rect4"></div>
+                    <div class="rect5"></div>
+                </div>
+                <p style="margin:0; color:#fff;opacity:0.6; text-align:center;">processing audio</p>
+                <p style="margin:0; color:#fff;opacity:0.6; text-align:center; font-size:80%;">(this may take a little
+                    while)</p>
+            </div>
+
+            <div style="display:none;" class="finished">
+                <p style="margin:0; margin-bottom:0.5em; color:#fff; text-align:center;">finished!</p>
+                <audio id="output-audio-tag" controls=""></audio>
+                <p style="margin:0; margin-top:0.5em; color:#fff; opacity:0.6; text-align:center;">right click on the play
+                    button to download</p>
+                <p style="margin:0; color:#fff;opacity:0.6; text-align:center; font-size:80%;">(look for "<i>Save audio
+                        as...</i>" and save it as "audio<b>.wav</b>")</p>
+            </div>
+
+            <!--<div id="modalAdv" style="background:white;width: 300px;height: 250px; max-width:100%;margin: 0 auto;margin-top:1em; overflow:hidden;"></div>-->
+
+        </div>
+    </section>
+<script>
+    // GLOBALS
+    var $ = document.querySelector.bind(document);
+    var $A = document.querySelectorAll.bind(document);
+    AudioContext = window.AudioContext || window.webkitAudioContext;
+    var globalAudioBuffer = null; // todo: load an example file by default (that tells them to upload their own)
+
+    // Microphone
+    let currentlyRecording = false;
+    let maxRecordingSeconds = 5 * 60;
+    async function recordFromMicrophone() {
+
+        if (currentlyRecording) {
+            return;
+        }
+        currentlyRecording = true;
+
+        // Change, button, start timer:
+        var micButtonCssText = $("#microphone-button").style.cssText;
+        $("#microphone-button").style.cssText = "background:#e71010; color:white;";
+        $("#microphone-button .start").style.cssText = "display:none;"
+        $("#microphone-button .mic-enable").style.cssText = "display:initial;"
+
+        let chunks = [];
+        let stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+        let mediaRecorder = new MediaRecorder(stream, { mimeType: "video/webm" });
+
+        mediaRecorder.start();
+        let timerInterval;
+
+        mediaRecorder.ondataavailable = function (e) { chunks.push(e.data); };
+        mediaRecorder.onstart = function () {
+            console.log('Started, state = ', mediaRecorder.state);
+
+            $("#microphone-button .mic-enable").style.cssText = "display:none;";
+            $("#microphone-button .stop").style.cssText = "display:initial;";
+
+            var seconds = 0;
+            $("#microphone-button .time").innerText = seconds;
+            timerInterval = setInterval(() => { seconds++; $("#microphone-button .time").innerText = seconds; }, 1000);
+
+
+            let stopFn = function () {
+                mediaRecorder.stop();
+                $("#microphone-button").removeEventListener("click", stopFn);
+                clearTimeout(maxLengthTimeout);
+            };
+            $("#microphone-button").addEventListener("click", stopFn)
+            let maxLengthTimeout = setTimeout(stopFn, maxRecordingSeconds * 1000);
+
+        };
+
+        mediaRecorder.onerror = function (e) { console.log('Error: ', e); };
+        mediaRecorder.onwarning = function (e) { console.log('Warning: ', e); };
+
+        mediaRecorder.onstop = async function () {
+            console.log('Stopped, state = ' + mediaRecorder.state);
+
+            let blob = new Blob(chunks, { type: mediaRecorder.mimeType });//+'; codecs=opus' });//
+            let audioURL = URL.createObjectURL(blob);
+
+            let audio = document.createElement('audio');
+            audio.controls = true;
+            audio.src = audioURL;
+            document.body.appendChild(audio);
+            audio.play();
+
+            let arrayBuffer = await (await fetch(audioURL)).arrayBuffer();
+
+            try {
+                globalAudioBuffer = await (new AudioContext()).decodeAudioData(arrayBuffer);
+                // $("#audio-load-success").style.display = "flex";
+            } catch (e) {
+                alert("Sorry, your browser doesn't support a crucial feature needed to allow you to record using your device's microphone. You should use Chrome or Firefox if you want the best audio support, and ensure you're using the *latest version* of your browser of choice. Chrome and Firefox update automatically, but you may need to completely close down the browser and potentially restart your device to 'force' it to update itself to the latest version.");
+            }
+
+            // Change, button, end timer:
+            $("#microphone-button").style.cssText = micButtonCssText;
+            $("#microphone-button .start").style.cssText = "display:initial;";
+            $("#microphone-button .stop").style.cssText = "display:none;";
+            clearInterval(timerInterval);
+
+            currentlyRecording = false;
+
+        }
+
+
+    }
+
+
+    async function loadTransform(e, transformName, ...transformArgs) {
+
+            if (currentlyRecording) {
+                alert("You're currently recording a clip using your microphone. Please click the red \"stop recording\" button at the top of the page to finalize the recording, then you can click one of the voice transformers to get your transformed audio file.");
+                return;
+            }
+
+            // let description = e.target.querySelector(".description").innerHTML;
+
+            let outputSection = $("body section.output");
+            outputSection.style.display = 'flex';
+            //$("body section.output .description").innerHTML = description;
+            $("body section.output .loading").style.display = 'block';
+            $("body section.output .finished").style.display = 'none';
+
+
+            //modalAdv.innerHTML = '<div style="width:100%; height:100%; overflow:hidden;"><ins class="adsbygoogle" style="display:block; max-height:100%; height:100%;" data-ad-client="ca-pub-3263838347296949" data-ad-slot="8209523126" data-ad-format="auto"></ins></div>';
+            //(adsbygoogle = adsbygoogle || []).push({});
+
+            // if (!globalAudioBuffer) {
+            //     let arrayBuffer = await (await fetch("../audio/example.mp3")).arrayBuffer();
+            //     let ctx = new AudioContext();
+            //     globalAudioBuffer = await ctx.decodeAudioData(arrayBuffer);
+            // }
+
+            //try {
+            let outputAudioBuffer = await window[transformName + "Transform"](globalAudioBuffer, ...transformArgs);
+                // outputAudioBuffer.start();
+
+
+            let outputWavBlob = await audioBufferToWaveBlob(outputAudioBuffer);
+            // let outputWavBlob = new Blob([new Uint8Array(outputAudioBuffer)]);
+            let audioUrl = URL.createObjectURL(outputWavBlob);
+            let audioTag = $("#output-audio-tag");
+            audioTag.src = audioUrl;
+            audioTag.play();
+            //} catch(e) {
+            //  alert("Sorry! There was an error while trying to generate this particular voice.");
+            //  closeOutputSection();
+            //}
+
+            $("body section.output .loading").style.display = 'none';
+            $("body section.output .finished").style.display = 'block';
+
+        }
+</script>
+<script src="./voicechanger/helpers.js"></script>
+    <script src="./voicechanger/doWorkerTask.js"></script>
+    <script src="./voicechanger/jungle.js"></script> <!-- pitch modulator lib -->
+<script src="./voicechanger/troll.js"></script>
+<script src="./voicechanger/speed.js"></script>
+<script src="./voicechanger/pitch.js"></script>
+<script src="./voicechanger/autowah.js"></script>
+</body>
+
+</html>
