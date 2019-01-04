@@ -9,11 +9,20 @@ async function churchTransform(audioBuffer) {
 
   // Reverb
   let convolver = ctx.createConvolver();
-  convolver.buffer = await ctx.decodeAudioData(await (await fetch("../audio/impulse-responses/church.wav")).arrayBuffer());
+  convolver.buffer = await ctx.decodeAudioData(await (await fetch("../church.wav")).arrayBuffer());
 
   // Create graph
   source.connect(convolver);
-  convolver.connect(ctx.destination);
+  // convolver.connect(ctx.destination);
+
+  // Create a gain node.
+  var gainNode = ctx.createGain();
+  // Connect the source to the gain node.
+  convolver.connect(gainNode);
+  // Connect the gain node to the destination.
+  gainNode.connect(ctx.destination);
+
+  gainNode.gain.value = 2;
 
   // Render
   source.start();
