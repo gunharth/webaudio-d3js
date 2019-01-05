@@ -25,16 +25,22 @@
 
     <div class="grid-container">
         <div>
-            <div style="cursor:pointer; position:relative; overflow:hidden; display:inline-block; vertical-align:top;">
-                <button style="cursor:pointer; ">upload audio</button>
-                <span> or </span>
-                <input accept="audio/*,video/*" onchange="loadAudioFile(this.files[0]);" style="cursor:pointer; z-index:5; position:absolute; top:0; left:0; bottom:0; right:0; opacity:0;"
-                    type="file">
-            </div>
+            <button onclick="importAudio('audio/piano.wav');">
+                <span class="start">play the piano</span>
+            </button>
+            <button onclick="importAudio('audio/guni.ogg');">
+                <span class="start">play guni</span>
+            </button>
             <button id="microphone-button" onclick="recordFromMicrophone();"><span class="start">record with
                     microphone</span>
                 <span class="mic-enable" style="display:none;">please enable microphone</span>
-                <span class="stop" style="display:none;">(<span class="time"></span>) stop recording</span></button>
+                <span class="stop" style="display:none;">(<span class="time"></span>) stop recording</span>
+            </button>
+            <div style="cursor:pointer; position:relative; overflow:hidden; display:inline-block; vertical-align:top;">
+                <button style="cursor:pointer; ">upload audio</button>
+                <input accept="audio/*,video/*" onchange="loadAudioFile(this.files[0]);" style="cursor:pointer; z-index:5; position:absolute; top:0; left:0; bottom:0; right:0; opacity:0;"
+                    type="file">
+            </div>
         </div>
         <div id="recording"></div>
         <div><a href="#" onclick="loadTransform(event, 'troll')">Scary</a></div>
@@ -101,9 +107,73 @@
         AudioContext = window.AudioContext || window.webkitAudioContext;
         var globalAudioBuffer = null; // todo: load an example file by default (that tells them to upload their own)
 
+        function removeAllAudioTags() {
+            var element = document.getElementsByTagName("audio"), index;
+
+            for (index = element.length - 1; index >= 0; index--) {
+                element[index].parentNode.removeChild(element[index]);
+            }
+        }
+
+        var source;
+        function importAudio(file) {
+            removeAllAudioTags();
+            var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            // source = audioCtx.createBufferSource();
+            // var source;
+            var request = new XMLHttpRequest();
+
+            request.open('GET', file, true);
+
+            request.responseType = 'arraybuffer';
+
+
+            request.onload = function () {
+                var audioData = request.response;
+
+                let audioURL = URL.createObjectURL(new Blob([audioData]));
+
+                let audio = document.createElement('audio');
+                audio.controls = true;
+                audio.src = audioURL;
+                $('#recording').appendChild(audio);
+                audio.play();
+
+                audioCtx.decodeAudioData(audioData, async function (buffer) {
+                     globalAudioBuffer = buffer;
+
+
+                    // globalAudioBuffer = await(new AudioContext()).decodeAudioData(source.buffer);
+
+                    // source.connect(audioCtx.destination);
+                    // source.loop = true;
+                    // alert(source);
+                    // try {
+                    // globalAudioBuffer = source;
+                    // globalAudioBuffer = await (new AudioContext()).decodeAudioData(audioData);
+
+                    // } catch (e) {
+                                            // alert("Sorry, either that's not an audio file, or it's not an audio format that's supported by your browser. Most modern browsers support: wav, mp3, mp4, ogg, webm, flac. You should use Chrome or Firefox if you want the best audio support, and ensure you're using the *latest version* of your browser of choice. Chrome and Firefox update automatically, but you may need to completely close down the browser and potentially restart your device to 'force' it to update itself to the latest version.");
+
+                    // }
+                // },
+                })
+
+                    // function (e) { console.log("Error with decoding audio data" + e.err); });
+
+            }
+
+            request.send();
+            // alert(source);
+
+
+
+        }
+
+
         let maxFileSizeMegabytes = 100;
         function loadAudioFile(file) {
-
+            removeAllAudioTags();
             if (file.size > maxFileSizeMegabytes * 1000 * 1000) {
                 alert("Sorry, that file is too big. Your audio file needs to be under " + maxFileSizeMegabytes + " megabytes.");
                 return;
@@ -160,7 +230,7 @@
         let currentlyRecording = false;
         let maxRecordingSeconds = 5 * 60;
         async function recordFromMicrophone() {
-
+            removeAllAudioTags();
             if (currentlyRecording) {
                 return;
             }
