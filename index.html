@@ -15,7 +15,7 @@
         .grid-container {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            grid-template-rows: 1fr 1fr 1fr 1fr 1fr;
+            grid-template-rows: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
             grid-template-areas: ". ."". ."". ."". ."". .";
         }
     </style>
@@ -24,6 +24,10 @@
 <body>
 
     <div class="grid-container">
+        <div>
+            <h2>1. Load a source</h2>
+        </div>
+        <div></div>
         <div>
             <button onclick="importAudio('audio/piano.wav');">
                 <span class="start">play the piano</span>
@@ -43,6 +47,10 @@
             </div>
         </div>
         <div id="recording"></div>
+        <div>
+            <h2>2. Transform</h2>
+        </div>
+        <div></div>
         <div><a href="#" onclick="loadTransform(event, 'troll')">Scary</a></div>
         <div id="troll"></div>
         <div><a href="#" onclick="loadTransform(event, 'speed', 1/2)">Slow</a></div>
@@ -102,10 +110,11 @@
     </section>
     <script>
         // GLOBALS
-        var $ = document.querySelector.bind(document);
-        var $A = document.querySelectorAll.bind(document);
+        let $ = document.querySelector.bind(document);
+        let $A = document.querySelectorAll.bind(document);
         AudioContext = window.AudioContext || window.webkitAudioContext;
-        var globalAudioBuffer = null; // todo: load an example file by default (that tells them to upload their own)
+        let globalAudioBuffer = null; // todo: load an example file by default (that tells them to upload their own)
+        let audioURL;
 
         function removeAllAudioTags() {
             var element = document.getElementsByTagName("audio"), index;
@@ -115,65 +124,36 @@
             }
         }
 
-        var source;
-        function importAudio(file) {
+        function appendAudioTag(id, audioURL) {
+            let audio = document.createElement('audio');
+            audio.controls = true;
+            audio.src = audioURL;
+            $('#' + id).appendChild(audio);
+            audio.play();
+        }
+
+
+        async function importAudio(file) {
+
             removeAllAudioTags();
-            var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            // source = audioCtx.createBufferSource();
-            // var source;
-            var request = new XMLHttpRequest();
 
-            request.open('GET', file, true);
+            let arrayBuffer = await (await fetch(file)).arrayBuffer();
+            audioURL = URL.createObjectURL(new Blob([arrayBuffer]));
 
-            request.responseType = 'arraybuffer';
+            appendAudioTag('recording', audioURL);
 
-
-            request.onload = function () {
-                var audioData = request.response;
-
-                let audioURL = URL.createObjectURL(new Blob([audioData]));
-
-                let audio = document.createElement('audio');
-                audio.controls = true;
-                audio.src = audioURL;
-                $('#recording').appendChild(audio);
-                audio.play();
-
-                audioCtx.decodeAudioData(audioData, async function (buffer) {
-                     globalAudioBuffer = buffer;
-
-
-                    // globalAudioBuffer = await(new AudioContext()).decodeAudioData(source.buffer);
-
-                    // source.connect(audioCtx.destination);
-                    // source.loop = true;
-                    // alert(source);
-                    // try {
-                    // globalAudioBuffer = source;
-                    // globalAudioBuffer = await (new AudioContext()).decodeAudioData(audioData);
-
-                    // } catch (e) {
-                                            // alert("Sorry, either that's not an audio file, or it's not an audio format that's supported by your browser. Most modern browsers support: wav, mp3, mp4, ogg, webm, flac. You should use Chrome or Firefox if you want the best audio support, and ensure you're using the *latest version* of your browser of choice. Chrome and Firefox update automatically, but you may need to completely close down the browser and potentially restart your device to 'force' it to update itself to the latest version.");
-
-                    // }
-                // },
-                })
-
-                    // function (e) { console.log("Error with decoding audio data" + e.err); });
-
-            }
-
-            request.send();
-            // alert(source);
-
-
+            let ctx = new AudioContext();
+            globalAudioBuffer = await ctx.decodeAudioData(arrayBuffer);
 
         }
 
 
+
         let maxFileSizeMegabytes = 100;
         function loadAudioFile(file) {
+
             removeAllAudioTags();
+
             if (file.size > maxFileSizeMegabytes * 1000 * 1000) {
                 alert("Sorry, that file is too big. Your audio file needs to be under " + maxFileSizeMegabytes + " megabytes.");
                 return;
@@ -184,29 +164,12 @@
                 let arrayBuffer = this.result;
                 try {
 
-                    // let outputWavBlob = new Blob([arrayBuffer]);
+                    audioURL = URL.createObjectURL(await new Blob([arrayBuffer]));
 
-                    // alert(URL.createObjectURL(new Blob([arrayBuffer])));
-                    let audioURL = URL.createObjectURL(await new Blob([arrayBuffer]));
+                    appendAudioTag('recording', audioURL);
 
-                    let audio = document.createElement('audio');
-                    audio.controls = true;
-                    audio.src = audioURL;
-                    $('#recording').appendChild(audio);
-                    audio.play();
                     globalAudioBuffer = await (new AudioContext()).decodeAudioData(arrayBuffer);
-                    // $("#audio-load-success").style.display = "flex";
-                    // let outputWavBlob = new Blob([new Uint8Array(globalAudioBuffer)]);
-                    // let audioUrl = URL.createObjectURL(outputWavBlob);
-                    // // let audioTag = $('#'+ transformName);
-                    // // audioTag.src = audioUrl;
-                    // // audioTag.play();
 
-                    // let audio = document.createElement('audio');
-                    // audio.controls = true;
-                    // audio.src = audioUrl;
-                    // $('#recording').appendChild(audio);
-                    // audio.play();
                 } catch (e) {
                     alert("Sorry, either that's not an audio file, or it's not an audio format that's supported by your browser. Most modern browsers support: wav, mp3, mp4, ogg, webm, flac. You should use Chrome or Firefox if you want the best audio support, and ensure you're using the *latest version* of your browser of choice. Chrome and Firefox update automatically, but you may need to completely close down the browser and potentially restart your device to 'force' it to update itself to the latest version.");
                 }
@@ -216,13 +179,6 @@
             }
 
             reader.readAsArrayBuffer(file);
-            // reader.read
-
-            // let outputWavBlob = await audioBufferToWaveBlob(globalAudioBuffer);
-
-
-            // let types = ["audio/mp3", "audio/vnd.wave", "audio/wav", "audio/wave", "audio/x-wav", "audio/ogg", "audio/webm", "audio/aac", "audio/aacp", "audio/3gpp", "audio/3gpp2", "audio/mp4", "audio/mp4a-latm", "audio/mpeg4-generic", "audio/x-flac"];
-            // if(true || types.includes(file.type)) { }
 
         }
 
@@ -278,13 +234,9 @@
                 console.log('Stopped, state = ' + mediaRecorder.state);
 
                 let blob = new Blob(chunks, { type: mediaRecorder.mimeType });//+'; codecs=opus' });//
-                let audioURL = URL.createObjectURL(blob);
+                audioURL = URL.createObjectURL(blob);
 
-                let audio = document.createElement('audio');
-                audio.controls = true;
-                audio.src = audioURL;
-                $('#recording').appendChild(audio);
-                audio.play();
+                appendAudioTag('recording', audioURL);
 
                 let arrayBuffer = await (await fetch(audioURL)).arrayBuffer();
 
@@ -316,59 +268,23 @@
                 return;
             }
 
-            // let description = e.target.querySelector(".description").innerHTML;
-
-            // let outputSection = $("body section.output");
-            // outputSection.style.display = 'flex';
-            // //$("body section.output .description").innerHTML = description;
-            // $("body section.output .loading").style.display = 'block';
-            // $("body section.output .finished").style.display = 'none';
-
-
-            //modalAdv.innerHTML = '<div style="width:100%; height:100%; overflow:hidden;"><ins class="adsbygoogle" style="display:block; max-height:100%; height:100%;" data-ad-client="ca-pub-3263838347296949" data-ad-slot="8209523126" data-ad-format="auto"></ins></div>';
-            //(adsbygoogle = adsbygoogle || []).push({});
-
-            // if (!globalAudioBuffer) {
-            //     let arrayBuffer = await (await fetch("../audio/example.mp3")).arrayBuffer();
-            //     let ctx = new AudioContext();
-            //     globalAudioBuffer = await ctx.decodeAudioData(arrayBuffer);
-            // }
-
-            //try {
             let outputAudioBuffer = await window[transformName + "Transform"](globalAudioBuffer, ...transformArgs);
-            // outputAudioBuffer.start();
-
 
             let outputWavBlob = await audioBufferToWaveBlob(outputAudioBuffer);
-            // let outputWavBlob = new Blob([outputAudioBuffer]);
-            let audioUrl = URL.createObjectURL(outputWavBlob);
-            // let audioTag = $('#'+ transformName);
-            // audioTag.src = audioUrl;
-            // audioTag.play();
-
-            let audio = document.createElement('audio');
-            audio.controls = true;
-            audio.src = audioUrl;
-            $('#' + transformName).appendChild(audio);
-            audio.play();
-            //} catch(e) {
-            //  alert("Sorry! There was an error while trying to generate this particular voice.");
-            //  closeOutputSection();
-            //}
-
-            // $("body section.output .loading").style.display = 'none';
-            // $("body section.output .finished").style.display = 'block';
+            audioURL = URL.createObjectURL(outputWavBlob);
+            appendAudioTag(transformName, audioURL);
 
         }
+
     </script>
-    <script src="./voicechanger/helpers.js"></script>
-    <script src="./voicechanger/doWorkerTask.js"></script>
-    <script src="./voicechanger/jungle.js"></script> <!-- pitch modulator lib -->
-    <script src="./voicechanger/troll.js"></script>
-    <script src="./voicechanger/speed.js"></script>
-    <script src="./voicechanger/pitch.js"></script>
-    <script src="./voicechanger/autowah.js"></script>
-    <script src="./voicechanger/church.js"></script>
+    <script src="js/helpers.js"></script>
+    <script src="js/doWorkerTask.js"></script>
+    <script src="js/jungle.js"></script> <!-- pitch modulator lib -->
+    <script src="js/troll.js"></script>
+    <script src="js/speed.js"></script>
+    <script src="js/pitch.js"></script>
+    <script src="js/autowah.js"></script>
+    <script src="js/reverb.js"></script>
 </body>
 
 </html>

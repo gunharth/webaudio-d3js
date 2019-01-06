@@ -9,7 +9,7 @@ async function churchTransform(audioBuffer) {
 
   // Reverb
   let convolver = ctx.createConvolver();
-  convolver.buffer = await ctx.decodeAudioData(await (await fetch("../church.wav")).arrayBuffer());
+  convolver.buffer = await ctx.decodeAudioData(await (await fetch("./audio/church.wav")).arrayBuffer());
 
   // Create graph
   source.connect(convolver);
