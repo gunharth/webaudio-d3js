@@ -2,7 +2,7 @@ async function audioBufferToWaveBlob(audioBuffer) {
 
   return new Promise(function(resolve, reject) {
 
-    var worker = new Worker('./js/waveWorker.js');
+    var worker = new Worker('./js/audio/waveWorker.js');
 
     worker.onmessage = function( e ) {
       var blob = new Blob([e.data.buffer], {type:"audio/wav"});
