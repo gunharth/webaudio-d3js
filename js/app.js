@@ -18,11 +18,8 @@ function appendAudioTag(id, audioURL) {
     audio.src = audioURL;
     $('#' + id).appendChild(audio);
     audio.onplaying = function () {
-        visualize(audio);
+        visualize(audio)
     };
-    // audio.onended = function () {
-    //     cancelAnimationFrame(request)
-    // };
     audio.play();
 }
 
@@ -178,16 +175,18 @@ async function loadTransform(e, transformName, ...transformArgs) {
 }
 
 var frequencyData = new Uint8Array(200);
-var svgHeight = 300;
-var svgWidth = window.innerWidth;
+var svgHeight = 255;
+var svgWidth = document.getElementById('freq').offsetWidth;
 var barPadding = 1;
 var analyser;
-var svg = createSvg('body', svgHeight, svgWidth);
+var svg = createSvg('#freq', svgHeight, svgWidth);
+var audioSrc;
 
 function visualize(audioElement) {
-    if (typeof ctx === 'undefined') { ctx = new AudioContext() };
-    // var audioElement = document.getElementById('audioElement');
-    var audioSrc = ctx.createMediaElementSource(audioElement);
+    // if (typeof ctx === 'undefined') { ctx = new AudioContext() };
+    // ctx = new AudioContext();
+    // ctx = ctx || new AudioContext();
+    audioSrc = ctx.createMediaElementSource(audioElement);
     analyser = ctx.createAnalyser();
 
     // Bind our analyser to the media element source.
@@ -219,7 +218,6 @@ function createSvg(parent, height, width) {
 var request;
 function renderChart() {
     request = requestAnimationFrame(renderChart);
-
     // Copy frequency data to frequencyData array.
     analyser.getByteFrequencyData(frequencyData);
     // console.log(frequencyData)
