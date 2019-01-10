@@ -12,16 +12,34 @@ function removeAllAudioTags() {
     }
 }
 
+let vis = document.getElementById('vis');
+
 function appendAudioTag(id, audioURL) {
     let audio = document.createElement('audio');
     audio.controls = true;
     audio.src = audioURL;
     $('#' + id).appendChild(audio);
     audio.onplaying = function () {
+
+        if(vis.checked) {
+            // alert('checked');
+
         visualize(audio)
+        }
     };
     audio.play();
 }
+
+vis.onchange = function () {
+    if (vis.checked) {
+        document.getElementById('freq').style.display = 'block';
+        svgWidth = document.getElementById('freq').offsetWidth;
+        svg = createSvg('#freq', svgHeight, svgWidth);
+    } else {
+        document.getElementById('freq').style.display = 'none';
+        document.getElementById('freq').children[0].remove();
+    }
+};
 
 async function importAudio(id, file) {
     removeAllAudioTags();
@@ -39,10 +57,7 @@ async function importAudio(id, file) {
     // Bind our analyser to the media element source.
     source.connect(analyser);
     source.connect(ctx.destination);
-
 }
-
-
 
 let maxFileSizeMegabytes = 100;
 function loadAudioFile(file) {
@@ -176,10 +191,10 @@ async function loadTransform(e, transformName, ...transformArgs) {
 
 var frequencyData = new Uint8Array(200);
 var svgHeight = 255;
-var svgWidth = document.getElementById('freq').offsetWidth;
+var svgWidth = 300;
 var barPadding = 1;
 var analyser;
-var svg = createSvg('#freq', svgHeight, svgWidth);
+var svg;
 var audioSrc;
 
 function visualize(audioElement) {
