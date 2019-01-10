@@ -1,9 +1,10 @@
 // GLOBALS
 let $ = document.querySelector.bind(document);
-AudioContext = window.AudioContext || window.webkitAudioContext;
+const AudioContext = window.AudioContext || window.webkitAudioContext;
 let ctx;
 let globalAudioBuffer = null;
 let audioURL;
+let audioIsPlaying = false;
 
 function removeAllAudioTags() {
     let element = document.getElementsByTagName('audio'), index;
@@ -20,6 +21,7 @@ function appendAudioTag(id, audioURL) {
     audio.src = audioURL;
     $('#' + id).appendChild(audio);
     audio.onplaying = function () {
+        audioIsPlaying = true;
         if(vis.checked) {
             visualize(audio);
         }
@@ -39,13 +41,13 @@ vis.onchange = function () {
 };
 
 async function importAudio(id, file) {
-    removeAllAudioTags();
+    removeAllAudioTags(); // cleanup Interface and remove all Tags
 
     let arrayBuffer = await (await fetch(file)).arrayBuffer();
     audioURL = URL.createObjectURL(new Blob([arrayBuffer]));
     appendAudioTag('recording-' + id, audioURL);
 
-    if (typeof ctx === 'undefined') { ctx = new AudioContext() };
+    ctx = ctx || new AudioContext();
     globalAudioBuffer = await ctx.decodeAudioData(arrayBuffer);
     let source = ctx.createBufferSource();
     source.buffer = globalAudioBuffer;
@@ -74,7 +76,7 @@ function loadAudioFile(file) {
             audioURL = URL.createObjectURL(await new Blob([arrayBuffer]));
             appendAudioTag('recording-upload', audioURL);
 
-            if (typeof ctx === 'undefined') { ctx = new AudioContext() };
+            ctx = ctx || new AudioContext();
             globalAudioBuffer = await ctx.decodeAudioData(arrayBuffer);
 
         } catch (e) {
@@ -148,7 +150,7 @@ async function recordFromMicrophone() {
         let arrayBuffer = await (await fetch(audioURL)).arrayBuffer();
 
         try {
-            if (typeof ctx === 'undefined') { ctx = new AudioContext() };
+            ctx = ctx || new AudioContext();
             globalAudioBuffer = await ctx.decodeAudioData(arrayBuffer);
             // $("#audio-load-success").style.display = "flex";
         } catch (e) {
@@ -185,9 +187,10 @@ async function loadTransform(e, transformName, ...transformArgs) {
 
 }
 
+// Visualisation
 var frequencyData;
 var svgHeight = 255;
-var svgWidth = 300;
+var svgWidth = 300; // max is 255 in frequenzy data
 var barPadding = 1;
 var analyser;
 var svg;
@@ -195,6 +198,7 @@ var audioSrc;
 
 function visualize(audioElement) {
 
+    // bind the audioElement to the AudioContext
     audioSrc = ctx.createMediaElementSource(audioElement);
     analyser = ctx.createAnalyser();
 
@@ -204,6 +208,7 @@ function visualize(audioElement) {
     audioSrc.connect(analyser);
     audioSrc.connect(ctx.destination);
 
+    // update the svg
     svg.selectAll('rect')
         .data(frequencyData)
         .enter()
@@ -216,7 +221,6 @@ function visualize(audioElement) {
     // Run the loop
     renderChart();
 }
-
 
 function createSvg(parent, height, width) {
     return d3.select(parent)
