@@ -6,7 +6,7 @@ let globalAudioBuffer = null;
 let audioURL;
 
 function removeAllAudioTags() {
-    let element = document.getElementsByTagName("audio"), index;
+    let element = document.getElementsByTagName('audio'), index;
     for (index = element.length - 1; index >= 0; index--) {
         element[index].parentNode.removeChild(element[index]);
     }
@@ -20,11 +20,8 @@ function appendAudioTag(id, audioURL) {
     audio.src = audioURL;
     $('#' + id).appendChild(audio);
     audio.onplaying = function () {
-
         if(vis.checked) {
-            // alert('checked');
-
-        visualize(audio)
+            visualize(audio);
         }
     };
     audio.play();
@@ -170,7 +167,6 @@ async function recordFromMicrophone() {
 
 
 }
-
 
 async function loadTransform(e, transformName, ...transformArgs) {
 
