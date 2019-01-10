@@ -189,7 +189,7 @@ async function loadTransform(e, transformName, ...transformArgs) {
 
 }
 
-var frequencyData = new Uint8Array(200);
+var frequencyData;
 var svgHeight = 255;
 var svgWidth = 300;
 var barPadding = 1;
@@ -198,6 +198,7 @@ var svg;
 var audioSrc;
 
 function visualize(audioElement) {
+    frequencyData =  new Uint8Array(200);
     // if (typeof ctx === 'undefined') { ctx = new AudioContext() };
     // ctx = new AudioContext();
     // ctx = ctx || new AudioContext();
