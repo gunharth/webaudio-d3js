@@ -170,8 +170,6 @@ async function recordFromMicrophone() {
 
 async function loadTransform(e, transformName, ...transformArgs) {
 
-    // removeAllAudioTags();
-
     if (currentlyRecording) {
         alert("You're currently recording a clip using your microphone. Please click the red \"stop recording\" button at the top of the page to finalize the recording, then you can click one of the voice transformers to get your transformed audio file.");
         return;
@@ -181,7 +179,9 @@ async function loadTransform(e, transformName, ...transformArgs) {
 
     let outputWavBlob = await audioBufferToWaveBlob(outputAudioBuffer);
     audioURL = URL.createObjectURL(outputWavBlob);
-    appendAudioTag(transformName, audioURL);
+    if (!document.getElementById(transformName).hasChildNodes()) {
+        appendAudioTag(transformName, audioURL);
+    }
 
 }
 
@@ -194,12 +194,11 @@ var svg;
 var audioSrc;
 
 function visualize(audioElement) {
-    frequencyData =  new Uint8Array(200);
-    // if (typeof ctx === 'undefined') { ctx = new AudioContext() };
-    // ctx = new AudioContext();
-    // ctx = ctx || new AudioContext();
+
     audioSrc = ctx.createMediaElementSource(audioElement);
     analyser = ctx.createAnalyser();
+
+    frequencyData = new Uint8Array(analyser.frequencyBinCount/4);
 
     // Bind our analyser to the media element source.
     audioSrc.connect(analyser);
