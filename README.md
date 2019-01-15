@@ -83,7 +83,7 @@ let outputAudioBuffer = await ctx.startRendering();
 return outputAudioBuffer;
 ```
 ### 1. Reverb
-````
+```
 let convolver = ctx.createConvolver();
 convolver.buffer = await ctx.decodeAudioData(await (await fetch("./audio/church.wav")).arrayBuffer());
 
