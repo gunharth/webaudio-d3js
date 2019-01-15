@@ -41,7 +41,14 @@ async function autowahTransform(audioBuffer) {
 
   waveshaper.connect(compressor);
   wetGain.connect(compressor);
-  compressor.connect(ctx.destination);
+  // compressor.connect(ctx.destination);
+
+  var gainNode = ctx.createGain();
+  gainNode.gain.value = 0.7;
+  compressor.connect(gainNode);
+  gainNode.connect(ctx.destination);
+
+
 
   inputNode.start(0);
   let outputAudioBuffer = await ctx.startRendering();
