@@ -1,4 +1,13 @@
-# Web Audio API and SVG
+# Web Audio API and SVG using d3.js
+
+## Audio Sources
+### <audio> Tag
+Feeds an existing audio element into the AudioContext.
+```
+let audioElement = document.querySelector('audio');
+var audioCtx = new AudioContext();
+var source = audioCtx.createMediaElementSource(audioElement);
+```
 
 ## Audio Research & Demos
 ### Recording Audio with JS solutions

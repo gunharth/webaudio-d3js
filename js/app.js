@@ -32,6 +32,7 @@ function appendAudioTag(id, audioURL) {
 vis.onchange = function () {
     if (vis.checked) {
         document.getElementById('freq').style.display = 'block';
+        document.getElementById('waveform').style.display = 'block';
         svgWidth = document.getElementById('freq').offsetWidth;
         svg = createSvg('#freq', svgHeight, svgWidth);
     } else {
@@ -189,12 +190,34 @@ async function loadTransform(e, transformName, ...transformArgs) {
 
 // Visualisation
 var frequencyData;
+var waveformData;
 var svgHeight = 255;
 var svgWidth = 300; // max is 255 in frequenzy data
 var barPadding = 1;
 var analyser;
 var svg;
 var audioSrc;
+
+
+let waveformWidth = 100;
+
+var numberOfPoints = Math.ceil(waveformWidth / 2);
+
+let waveform = d3.select('#wave')
+    .attr('width', waveformWidth)
+    .attr('height', 255);
+
+var xScale = d3.scaleLinear()
+    .range([0, waveformWidth])
+    .domain([0, numberOfPoints]);
+
+var yScale = d3.scaleLinear()
+    .range([255, 0])
+    .domain([-1, 1]);
+
+var line = d3.line()
+    .x(function (d, i) { return xScale(i); })
+    .y(function (d, i) { return yScale(d); });
 
 function visualize(audioElement) {
 
@@ -203,11 +226,13 @@ function visualize(audioElement) {
     analyser = ctx.createAnalyser();
 
     frequencyData = new Uint8Array(analyser.frequencyBinCount/4);
+    waveformData = new Float32Array(analyser.fftSize);
 
     // Bind our analyser to the media element source.
     audioSrc.connect(analyser);
     audioSrc.connect(ctx.destination);
 
+    waveform.attr('width', svgWidth)
     // update the svg
     svg.selectAll('rect')
         .data(frequencyData)
@@ -217,6 +242,9 @@ function visualize(audioElement) {
             return i * (svgWidth / frequencyData.length);
         })
         .attr('width', svgWidth / frequencyData.length - barPadding);
+
+
+
 
     // Run the loop
     renderChart();
@@ -229,12 +257,16 @@ function createSvg(parent, height, width) {
         .attr('width', width);
 }
 
+
+
 // Continuously loop and update chart with frequency data.
 var request;
 function renderChart() {
     request = requestAnimationFrame(renderChart);
     // Copy frequency data to frequencyData array.
     analyser.getByteFrequencyData(frequencyData);
+    analyser.getFloatTimeDomainData(waveformData);
+    // console.log(waveformData);
     // console.log(frequencyData)
 
     // Update d3 chart with new data.
@@ -249,4 +281,8 @@ function renderChart() {
         .attr('fill', function (d) {
             return 'rgb(' + d + ', 40, 50)';
         });
+
+    waveform.select("path")
+        .datum(waveformData)
+        .attr("d", line);
 }
