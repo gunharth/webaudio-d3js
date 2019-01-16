@@ -1,47 +1,22 @@
-// GLOBALS
-// let $ = document.querySelector.bind(document);
 // audio variables
 const AudioContext = window.AudioContext || window.webkitAudioContext;
-let ctx;
-let globalAudioBuffer = null;
-let audioURL;
+let ctx; // created audio context
+let globalAudioBuffer = null; // holds all audio buffers from audio sources
+let audioURL; // audio url
 // ui variables
-let visibilityCheckbox = $('#visibilityCheckbox');
 let svgParent = $('#svg-parent');
+// visualisation
+let analyser;
+let frequencyData; // frequency from analyser
+let waveformData; // waveform from analyser
+// svg settings
+let svgHeight = 511;
+let svgParentWidth = svgParent.width();
+let svgPathHeight = Math.floor(svgHeight / 2);
+// upload
+let maxFileSizeMegabytes = 100;
 
-// let audioIsPlaying = false;
-
-// Clean the UI and remove all audio tags
-function removeAllAudioTags() {
-    let element = document.getElementsByTagName('audio'), index;
-    for (index = element.length - 1; index >= 0; index--) {
-        element[index].parentNode.removeChild(element[index]);
-    }
-}
-
-
-function appendAudioTag(id, audioURL) {
-    let audio = document.createElement('audio');
-    audio.controls = true;
-    audio.src = audioURL;
-    $('#' + id).append(audio);
-    audio.onplaying = function () {
-        if (svgParent.is(':visible')) {
-            visualize(audio);
-        }
-    };
-    audio.play();
-}
-
-
-visibilityCheckbox.change(function () {
-    if ($(this).is(':checked')) {
-        svgParent.slideDown();
-    } else {
-        svgParent.slideUp();
-    }
-});
-
+// load audio file with ajax
 async function importAudio(id, file) {
     removeAllAudioTags(); // cleanup Interface and remove all Tags
 
@@ -60,54 +35,21 @@ async function importAudio(id, file) {
     // source.connect(ctx.destination);
 }
 
-let maxFileSizeMegabytes = 100;
-function loadAudioFile(file) {
-
-    removeAllAudioTags();
-
-    if (file.size > maxFileSizeMegabytes * 1000 * 1000) {
-        alert('Sorry, that file is too big. Your audio file needs to be under ' + maxFileSizeMegabytes + ' megabytes.');
-        return;
-    }
-
-    let reader = new FileReader();
-    reader.onloadend = async function () {
-        let arrayBuffer = this.result;
-        try {
-
-            audioURL = URL.createObjectURL(await new Blob([arrayBuffer]));
-            appendAudioTag('recording-upload', audioURL);
-
-            ctx = ctx || new AudioContext();
-            globalAudioBuffer = await ctx.decodeAudioData(arrayBuffer);
-
-        } catch (e) {
-            alert('Sorry, this is not an audio file');
-        }
-    },
-    reader.onerror = function (e) {
-        alert('There was an error reading that file: ' + JSON.stringify(e));
-    };
-
-    reader.readAsArrayBuffer(file);
-
-}
-
-// Microphone
+// record with microphone
 let currentlyRecording = false;
 let maxRecordingSeconds = 5 * 60;
 async function recordFromMicrophone() {
-    removeAllAudioTags();
+    removeAllAudioTags(); // cleanup Interface and remove all Tags
     if (currentlyRecording) {
         return;
     }
     currentlyRecording = true;
 
     // Change, button, start timer:
-    var micButtonCssText = $('#microphone-button').style.cssText;
-    $('#microphone-button').style.cssText = 'background:#e71010; color:white;';
-    $('#microphone-button .start').style.cssText = 'display:none;';
-    $('#microphone-button .mic-enable').style.cssText = 'display:initial;';
+    let microphoneButton = $('#microphone-button');
+
+    microphoneButton.find('.start').hide();
+    microphoneButton.find('.mic-enable').show();
 
     let chunks = [];
     let stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
@@ -120,22 +62,20 @@ async function recordFromMicrophone() {
     mediaRecorder.onstart = function () {
         console.log('Started, state = ', mediaRecorder.state);
 
-        $('#microphone-button .mic-enable').style.cssText = 'display:none;';
-        $('#microphone-button .stop').style.cssText = 'display:initial;';
+        microphoneButton.find('.mic-enable').hide();
+        microphoneButton.find('.stop').show();
 
-        var seconds = 0;
-        $('#microphone-button .time').innerText = seconds;
-        timerInterval = setInterval(() => { seconds++; $('#microphone-button .time').innerText = seconds; }, 1000);
-
+        let seconds = 0;
+        microphoneButton.find('.time').text(seconds);
+        timerInterval = setInterval(() => { seconds++; microphoneButton.find('.time').text(seconds); }, 1000);
 
         let stopFn = function () {
             mediaRecorder.stop();
-            $('#microphone-button').removeEventListener('click', stopFn);
+            microphoneButton.off('click', stopFn);
             clearTimeout(maxLengthTimeout);
         };
-        $('#microphone-button').addEventListener('click', stopFn);
+        microphoneButton.on('click', stopFn);
         let maxLengthTimeout = setTimeout(stopFn, maxRecordingSeconds * 1000);
-
     };
 
     mediaRecorder.onerror = function (e) { console.log('Error: ', e); };
@@ -159,18 +99,43 @@ async function recordFromMicrophone() {
         }
 
         // Change, button, end timer:
-        $('#microphone-button').style.cssText = micButtonCssText;
-        $('#microphone-button .start').style.cssText = 'display:initial;';
-        $('#microphone-button .stop').style.cssText = 'display:none;';
+        microphoneButton.find('.start').css('display', 'initial');
+        microphoneButton.find('.stop').hide();
         clearInterval(timerInterval);
-
         currentlyRecording = false;
-
     };
-
-
 }
 
+// upload audio
+function loadAudioFile(file) {
+    removeAllAudioTags(); // cleanup Interface and remove all Tags
+
+    if (file.size > maxFileSizeMegabytes * 1000 * 1000) {
+        alert('Sorry, that file is too big. Your audio file needs to be under ' + maxFileSizeMegabytes + ' megabytes.');
+        return;
+    }
+
+    let reader = new FileReader();
+    reader.onloadend = async function () {
+        let arrayBuffer = this.result;
+        try {
+            audioURL = URL.createObjectURL(await new Blob([arrayBuffer]));
+            appendAudioTag('recording-upload', audioURL);
+
+            ctx = ctx || new AudioContext();
+            globalAudioBuffer = await ctx.decodeAudioData(arrayBuffer);
+        } catch (e) {
+            alert('Sorry, this is not an audio file');
+        }
+    },
+        reader.onerror = function (e) {
+            alert('There was an error reading that file: ' + JSON.stringify(e));
+        };
+
+    reader.readAsArrayBuffer(file);
+}
+
+// load the audio transformations
 async function loadTransform(e, transformName, ...transformArgs) {
 
     if (currentlyRecording) {
@@ -185,27 +150,18 @@ async function loadTransform(e, transformName, ...transformArgs) {
     if (!document.getElementById(transformName).hasChildNodes()) {
         appendAudioTag(transformName, audioURL);
     }
-
 }
 
-// Visualisation
-var frequencyData;
-var waveformData;
-var svgHeight = 511;
-var svgParentWidth = svgParent.width();
-var svgPathHeight = Math.floor(svgHeight / 2);
-var barPadding = 1;
-var analyser;
-
+// d3js
 let svg = d3.select('#svg')
     .attr('width', svgParentWidth)
     .attr('height', svgHeight);
 
 svg.append('line')
     .attr('x1', 0)
-    .attr('y1', svgPathHeight+1)
+    .attr('y1', svgPathHeight + 1)
     .attr('x2', svgParentWidth)
-    .attr('y2', svgPathHeight+1)
+    .attr('y2', svgPathHeight + 1)
     .attr('stroke-width', '1')
     .attr('stroke', '#000');
 
@@ -221,17 +177,17 @@ waveformGroup
     .attr('height', svgPathHeight)
     .attr('transform', 'translate(0, ' + svgPathHeight + ')');
 
-var xScale = d3.scaleLinear()
+let waveXScale = d3.scaleLinear()
     .range([0, svgParentWidth])
     .domain([0, svgParentWidth]);
 
-var yScale = d3.scaleLinear()
+let waveYScale = d3.scaleLinear()
     .range([255, 0])
     .domain([-1, 1]);
 
-var line = d3.line()
-    .x(function (d, i) { return xScale(i); })
-    .y(function (d, i) { return yScale(d); });
+let waveLine = d3.line()
+    .x(function (d, i) { return waveXScale(i); })
+    .y(function (d, i) { return waveYScale(d); });
 
 
 function visualize(audioElement) {
@@ -240,7 +196,7 @@ function visualize(audioElement) {
     let audioSrc = ctx.createMediaElementSource(audioElement);
     analyser = ctx.createAnalyser();
 
-    frequencyData = new Uint8Array(analyser.frequencyBinCount/4);
+    frequencyData = new Uint8Array(analyser.frequencyBinCount / 4);
     waveformData = new Float32Array(analyser.fftSize);
 
     // Bind our analyser to the media element source.
@@ -254,7 +210,7 @@ function visualize(audioElement) {
         .attr('x', function (d, i) {
             return i * (svgParentWidth / frequencyData.length);
         })
-        .attr('width', svgParentWidth / frequencyData.length - barPadding);
+        .attr('width', svgParentWidth / frequencyData.length - 1); // 1 is bar spacing
 
     // Run the loop
     renderChart();
@@ -284,5 +240,39 @@ function renderChart() {
 
     waveformGroup.select('path')
         .datum(waveformData)
-        .attr('d', line);
+        .attr('d', waveLine);
+}
+
+// Interface functions
+// Show Transformation buttons
+$('.grid-container').on('click', 'h2', function () {
+    $('.grid-container').find('button').fadeToggle();
+});
+
+// Show Visualisation area
+$('.col-header-5').on('click', 'h2', function () {
+    svgParent.slideToggle();
+});
+
+// $('button:eq(0)').trigger('click');
+
+// Clean the UI and remove all audio tags
+function removeAllAudioTags() {
+    let element = document.getElementsByTagName('audio'), index;
+    for (index = element.length - 1; index >= 0; index--) {
+        element[index].parentNode.removeChild(element[index]);
+    }
+}
+
+function appendAudioTag(id, audioURL) {
+    let audio = document.createElement('audio');
+    audio.controls = true;
+    audio.src = audioURL;
+    $('#' + id).append(audio);
+    audio.onplaying = function () {
+        if (svgParent.is(':visible')) {
+            visualize(audio);
+        }
+    };
+    audio.play();
 }

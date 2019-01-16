@@ -12,38 +12,39 @@
 
 <body>
     <div class="grid-container-sources">
-        <div class="col-header-4">
+        <div>
             <h2>1. Load a source</h2>
         </div>
 
         <div>
-            <button class="recordButton" onclick="importAudio('piano','audio/piano.wav');">Play the piano</button>
+            <button class="recordButton" onclick="importAudio('piano','audio/piano.wav');">Piano</button>
         </div>
         <div>
-            <button class="recordButton" onclick="importAudio('guni','audio/guni.ogg');">Ajax guni</button>
+            <button class="recordButton" onclick="importAudio('guni','audio/guni.ogg');">Guni</button>
         </div>
         <div>
             <button class="recordButton" id="microphone-button" onclick="recordFromMicrophone();">
-                <span class="start">Record with microphone</span>
-                <span class="mic-enable" style="display:none;">please enable microphone</span>
-                <span class="stop" style="display:none;">(<span class="time"></span>) stop recording</span>
+                <span class="start">Record</span>
+                <span class="mic-enable" style="display:none;">enable mic</span>
+                <span class="stop" style="display:none;">(<span class="time"></span>) Stop</span>
             </button>
         </div>
         <div>
             <div style="cursor:pointer; position:relative; overflow:hidden; display:inline-block; vertical-align:top;">
-                <button class="recordButton">upload audio</button>
+                <button class="recordButton">Upload</button>
                 <input accept="audio/*,video/*" onchange="loadAudioFile(this.files[0]);" style="cursor:pointer; z-index:5; position:absolute; top:0; left:0; bottom:0; right:0; opacity:0;" type="file">
             </div>
         </div>
 
-        <div id="recording-piano"></div>
+        <div></div>
+        <div id="recording-piano"><!--<audio controls="" src="audio/piano.wav">--></audio></div>
         <div id="recording-guni"></div>
         <div id="recording-mic"></div>
         <div id="recording-upload"></div>
     </div>
 
     <div class="grid-container">
-        <div class="col-header-5">
+        <div>
             <h2>2. Transform</h2>
         </div>
 
@@ -53,6 +54,7 @@
         <div><button class="transformButton" onclick="loadTransform(event, 'pitch', 4)">Pitch</button></div>
         <div><button class="transformButton" onclick="loadTransform(event, 'scary')">Scary</button></div>
 
+        <div></div>
         <div id="reverb"></div>
         <div id="wah"></div>
         <div id="speed"></div>
@@ -62,10 +64,7 @@
     </div>
 
     <div class="col-header-5">
-        <h2>3. Visualise <label class="switch">
-            <input id="visibilityCheckbox" type="checkbox">
-            <span class="slider round"></span>
-        </label></h2>
+        <h2>3. Visualise </h2>
     </div>
 
     <div id="svg-parent" style="width: 100%; display: none;">
@@ -75,10 +74,8 @@
             <g class="waveform"><path></path></g>
         </svg>
     </div>
-
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/d3/5.7.0/d3.min.js"></script>
-
     <script src="js/audio/helpers.js"></script>
     <script src="js/audio/doWorkerTask.js"></script>
     <script src="js/audio/jungle.js"></script> <!-- pitch modulator lib -->

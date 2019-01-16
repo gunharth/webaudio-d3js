@@ -14,18 +14,27 @@ h2 {
 
 .grid-container-sources {
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr 1fr;
-    grid-template-rows: 0.8fr 0.8fr 0.8fr;
+    grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+    grid-template-rows: 50px;
     grid-gap: 10px;
     text-align: center;
+    align-items: center;
+    background: #ddd;
+    min-height: 140px;
+    padding: 10px;
+    padding-top: 11px;
 }
 
 .grid-container {
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
-    grid-template-rows: 0.8fr 0.8fr 0.8fr;
+    grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr;
+    grid-template-rows: 50px;
     grid-gap: 10px;
     text-align: center;
+    align-items: center;
+    background: #ccc;
+    min-height: 140px;
+    padding: 10px;
 }
 
 audio {
@@ -78,18 +87,25 @@ button {
     border-radius: 10px;
     padding: 6px 15px;
     font-size: 17px;
+    min-width: 150px;
 }
 
-.col-header-4 {
+/* .col-header-4 {
     grid-column: 1 / span 4;
     text-align: left;
     padding-left: 5%;
-}
+} */
 
 .col-header-5 {
     grid-column: 1 / span 5;
     text-align: left;
     padding-left: 5%;
+    padding-top: 20px;
+    padding-bottom: 10px;
+}
+
+.grid-container button {
+    display: none;
 }
 
 svg {
