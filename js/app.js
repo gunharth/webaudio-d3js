@@ -223,11 +223,9 @@ function visualize(audioElement) {
 // Continuously loop and update chart with frequency data.
 function renderChart() {
     requestAnimationFrame(renderChart);
-    // Copy frequency data to frequencyData array.
+
     analyser.getByteFrequencyData(frequencyData);
     analyser.getFloatTimeDomainData(waveformData);
-    // console.log(waveformData);
-    // console.log(frequencyData)
 
     // Update d3 chart with new data.
     frequencyGroup.selectAll('rect')
@@ -258,14 +256,9 @@ $('.col-header-5').on('click', 'h2', function () {
     svgParent.slideToggle();
 });
 
-// $('button:eq(0)').trigger('click');
-
 // Clean the UI and remove all audio tags
 function removeAllAudioTags() {
-    let element = document.getElementsByTagName('audio'), index;
-    for (index = element.length - 1; index >= 0; index--) {
-        element[index].parentNode.removeChild(element[index]);
-    }
+    $('audio').remove();
 }
 
 function appendAudioTag(id, audioURL) {
