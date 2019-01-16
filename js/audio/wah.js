@@ -1,5 +1,5 @@
 self.AudioContext = (self.AudioContext || self.webkitAudioContext);
-async function autowahTransform(audioBuffer) {
+async function wahTransform(audioBuffer) {
 
   let ctx = new OfflineAudioContext(audioBuffer.numberOfChannels, audioBuffer.length, audioBuffer.sampleRate);
 

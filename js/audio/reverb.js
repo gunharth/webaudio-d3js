@@ -1,5 +1,5 @@
 self.AudioContext = (self.AudioContext || self.webkitAudioContext);
-async function churchTransform(audioBuffer) {
+async function reverbTransform(audioBuffer) {
 
   let ctx = new OfflineAudioContext(audioBuffer.numberOfChannels, audioBuffer.length, audioBuffer.sampleRate);
 

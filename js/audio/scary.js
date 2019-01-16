@@ -1,5 +1,5 @@
 self.AudioContext = (self.AudioContext || self.webkitAudioContext);
-async function sauronTransform(audioBuffer) {
+async function scaryTransform(audioBuffer) {
 
   let ctx = new OfflineAudioContext(audioBuffer.numberOfChannels, audioBuffer.length, audioBuffer.sampleRate);
 
@@ -36,13 +36,11 @@ async function sauronTransform(audioBuffer) {
   filter.type = "lowpass";
   filter.frequency.value = 2000;
 
-  // Reverb
-  let convolver = ctx.createConvolver();
-  convolver.buffer = await ctx.decodeAudioData(await (await fetch("../audio/impulse-responses/voxengo/Parking Garage.wav")).arrayBuffer());
-
   let compressor = ctx.createDynamicsCompressor();
   let compressor2 = ctx.createDynamicsCompressor();
   let compressor3 = ctx.createDynamicsCompressor();
+  let compressor4 = ctx.createDynamicsCompressor();
+  let compressor5 = ctx.createDynamicsCompressor();
 
   // Create graph
   oscillator1.connect(oscillatorGain);
@@ -52,24 +50,21 @@ async function sauronTransform(audioBuffer) {
   // ---
   source.connect(compressor2)
   compressor2.connect(delay);
-  delay.connect(compressor3);
+  delay.connect(compressor3)
   compressor3.connect(filter);
-  filter.connect(convolver)
-  convolver.connect(ctx.destination);
+  filter.connect(compressor5)
+
 
   oscillator3.connect(oscillatorGain2);
   oscillatorGain2.connect(delay2.delayTime);
 
-  let noConvGain = ctx.createGain();
-  noConvGain.gain.value = 0.9;
-  filter.connect(noConvGain);
-  noConvGain.connect(ctx.destination);
+  source.connect(compressor)
+  compressor.connect(delay2);
+  delay2.connect(compressor4)
+  compressor4.connect(filter)
+  filter.connect(compressor5);
 
-  // source.connect(compressor)
-  // compressor.connect(delay2);
-  // delay2.connect(filter)
-  // filter.connect(ctx.destination);
-
+  compressor5.connect(ctx.destination);
   //
   //filter.connect(ctx.destination);
   //compressor.connect(ctx.destination);

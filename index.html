@@ -47,17 +47,17 @@
             <h2>2. Transform</h2>
         </div>
 
-        <div><button class="transformButton" onclick="loadTransform(event, 'church')">Reverb</button></div>
-        <div><button class="transformButton" onclick="loadTransform(event, 'autowah', 1.9)">Wah</button></div>
+        <div><button class="transformButton" onclick="loadTransform(event, 'reverb')">Reverb</button></div>
+        <div><button class="transformButton" onclick="loadTransform(event, 'wah', 1.9)">Wah</button></div>
         <div><button class="transformButton" onclick="loadTransform(event, 'speed', 1/2)">Slow</button></div>
         <div><button class="transformButton" onclick="loadTransform(event, 'pitch', 4)">Pitch</button></div>
-        <div><button class="transformButton" onclick="loadTransform(event, 'troll')">Scary</button></div>
+        <div><button class="transformButton" onclick="loadTransform(event, 'scary')">Scary</button></div>
 
-        <div id="church"></div>
-        <div id="autowah"></div>
+        <div id="reverb"></div>
+        <div id="wah"></div>
         <div id="speed"></div>
         <div id="pitch"></div>
-        <div id="troll"></div>
+        <div id="scary"></div>
 
     </div>
 
@@ -77,10 +77,10 @@
     <script src="js/audio/helpers.js"></script>
     <script src="js/audio/doWorkerTask.js"></script>
     <script src="js/audio/jungle.js"></script> <!-- pitch modulator lib -->
-    <script src="js/audio/troll.js"></script>
+    <script src="js/audio/scary.js"></script>
     <script src="js/audio/speed.js"></script>
     <script src="js/audio/pitch.js"></script>
-    <script src="js/audio/autowah.js"></script>
+    <script src="js/audio/wah.js"></script>
     <script src="js/audio/reverb.js"></script>
     <script src="js/app.js"></script>
 </body>
