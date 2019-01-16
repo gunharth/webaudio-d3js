@@ -37,12 +37,18 @@ h2 {
     padding: 10px;
 }
 
+.grid-container h2:hover,
+.col-header-5 h2:hover {
+    cursor: pointer;
+    color: rgb(100, 99, 99);
+}
+
 audio {
     width: 100%;
     border-radius: 20px;
 }
 
-.recordButton {
+.sourceButton {
     -moz-box-shadow: inset 0px 39px 0px -24px #e67a73;
     -webkit-box-shadow: inset 0px 39px 0px -24px #e67a73;
     box-shadow: inset 0px 39px 0px -24px #e67a73;
@@ -54,11 +60,11 @@ audio {
     text-shadow: 0px 1px 0px #b23e35;
 }
 
-.recordButton:hover {
+.sourceButton:hover {
     background-color: #eb675e;
 }
 
-.recordButton:active {
+.sourceButton:active {
     position: relative;
     top: 1px;
 }

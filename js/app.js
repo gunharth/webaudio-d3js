@@ -16,7 +16,11 @@ let svgPathHeight = Math.floor(svgHeight / 2);
 // upload
 let maxFileSizeMegabytes = 100;
 
-// load audio file with ajax
+// Preloading the piano into an audio context on page load throws an error in Chrome
+// Thus we work around by using also the ajax load method
+// the visualisation section outlines loading existing audio sources from tags
+
+// Guni button: load audio file with ajax
 async function importAudio(id, file) {
     removeAllAudioTags(); // cleanup Interface and remove all Tags
 
@@ -35,7 +39,7 @@ async function importAudio(id, file) {
     // source.connect(ctx.destination);
 }
 
-// record with microphone
+// Record button: record audio with the mic
 let currentlyRecording = false;
 let maxRecordingSeconds = 5 * 60;
 async function recordFromMicrophone() {
@@ -106,7 +110,7 @@ async function recordFromMicrophone() {
     };
 }
 
-// upload audio
+//Upload button: upload audio from the browser
 function loadAudioFile(file) {
     removeAllAudioTags(); // cleanup Interface and remove all Tags
 
@@ -128,9 +132,9 @@ function loadAudioFile(file) {
             alert('Sorry, this is not an audio file');
         }
     },
-        reader.onerror = function (e) {
-            alert('There was an error reading that file: ' + JSON.stringify(e));
-        };
+    reader.onerror = function (e) {
+        alert('There was an error reading that file: ' + JSON.stringify(e));
+    };
 
     reader.readAsArrayBuffer(file);
 }
