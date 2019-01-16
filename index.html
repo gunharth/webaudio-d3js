@@ -63,9 +63,17 @@
 
     <div class="col-header-5">
         <h2>3. Visualise <label class="switch">
-            <input id="vis" type="checkbox">
+            <input id="visibilityCheckbox" type="checkbox">
             <span class="slider round"></span>
         </label></h2>
+    </div>
+
+    <div id="svg-parent" style="width: 100%;">
+        <svg id="svg">
+            <g class="frequency"></g>
+            <!-- <line x1="0" y1="0" x2="300" y2="0" stroke="gray" stroke-width="5" /> -->
+            <g class="waveform"><path></path></g>
+        </svg>
     </div>
 
     <div id="freq" style="width: 100%; display: none;"></div>
@@ -73,7 +81,9 @@
         <svg id="wave"><path></path></svg>
     </div>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/d3/5.7.0/d3.min.js"></script>
+
     <script src="js/audio/helpers.js"></script>
     <script src="js/audio/doWorkerTask.js"></script>
     <script src="js/audio/jungle.js"></script> <!-- pitch modulator lib -->

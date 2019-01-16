@@ -1,11 +1,17 @@
 // GLOBALS
-let $ = document.querySelector.bind(document);
+// let $ = document.querySelector.bind(document);
+// audio variables
 const AudioContext = window.AudioContext || window.webkitAudioContext;
 let ctx;
 let globalAudioBuffer = null;
 let audioURL;
-let audioIsPlaying = false;
+// ui variables
+let visibilityCheckbox = $('#visibilityCheckbox');
+let svgParent = $('#svg-parent');
 
+// let audioIsPlaying = false;
+
+// Clean the UI and remove all audio tags
 function removeAllAudioTags() {
     let element = document.getElementsByTagName('audio'), index;
     for (index = element.length - 1; index >= 0; index--) {
@@ -13,33 +19,36 @@ function removeAllAudioTags() {
     }
 }
 
-let vis = document.getElementById('vis');
+
+// let svg = $('#svg');
 
 function appendAudioTag(id, audioURL) {
     let audio = document.createElement('audio');
     audio.controls = true;
     audio.src = audioURL;
-    $('#' + id).appendChild(audio);
+    $('#' + id).append(audio);
     audio.onplaying = function () {
-        audioIsPlaying = true;
-        if(vis.checked) {
+        // audioIsPlaying = true;
+        // if(visibilityCheckbox.checked) {
             visualize(audio);
-        }
+        // }
     };
     audio.play();
 }
 
-vis.onchange = function () {
-    if (vis.checked) {
-        document.getElementById('freq').style.display = 'block';
-        document.getElementById('waveform').style.display = 'block';
-        svgWidth = document.getElementById('freq').offsetWidth;
-        svg = createSvg('#freq', svgHeight, svgWidth);
+
+visibilityCheckbox.change(function () {
+    // alert($(this).is(':checked'));
+    if ($(this).is(':checked')) {
+        // document.getElementById('freq').style.display = 'block';
+        // document.getElementById('waveform').style.display = 'block';
+        svgWidth = svgParent.width();
+        //svg = createSvg('#freq', svgHeight, svgWidth);
     } else {
-        document.getElementById('freq').style.display = 'none';
-        document.getElementById('freq').children[0].remove();
+        // document.getElementById('freq').style.display = 'none';
+        // document.getElementById('freq').children[0].remove();
     }
-};
+});
 
 async function importAudio(id, file) {
     removeAllAudioTags(); // cleanup Interface and remove all Tags
@@ -191,25 +200,54 @@ async function loadTransform(e, transformName, ...transformArgs) {
 // Visualisation
 var frequencyData;
 var waveformData;
-var svgHeight = 255;
-var svgWidth = 300; // max is 255 in frequenzy data
+// var svgHeight = 255;
+var svgHeight = 511;
+var svgParentWidth = svgParent.width();
+var svgPathHeight = Math.floor(svgHeight / 2);
+// var svgWidth = 300; // max is 255 in frequenzy data
 var barPadding = 1;
 var analyser;
-var svg;
+// var svg;
 var audioSrc;
 
 
-let waveformWidth = 100;
+// let waveformWidth = 200;
 
-var numberOfPoints = Math.ceil(waveformWidth / 2);
+// var svgParentWidth = Math.ceil(svgParentWidth);
 
-let waveform = d3.select('#wave')
-    .attr('width', waveformWidth)
-    .attr('height', 255);
+let svg = d3.select('#svg')
+    .attr('width', svgParentWidth)
+    .attr('height', svgHeight);
+
+svg.append('line')
+    .attr('x1', 0)
+    .attr('y1', svgPathHeight+1)
+    .attr('x2', svgParentWidth)
+    .attr('y2', svgPathHeight+1)
+    .attr('stroke-width', '1')
+    .attr('stroke', '#000');
+
+let frequencyGroup = d3.select('.frequency');
+let waveformGroup = d3.select('.waveform');
+
+frequencyGroup
+    .attr('width', svgParentWidth)
+    .attr('height', svgPathHeight);
+
+svg.select('.waveform')
+    .attr('width', svgParentWidth)
+    .attr('height', svgPathHeight)
+    .attr('transform', 'translate(0, ' + svgPathHeight + ')');
+
+// let waveform = d3.select('#wave')
+//     .attr('width', waveformWidth)
+//     .attr('height', 255);
+
+
 
 var xScale = d3.scaleLinear()
-    .range([0, waveformWidth])
-    .domain([0, numberOfPoints]);
+    .range([0, svgParentWidth])
+    .domain([0, svgParentWidth]);
 
 var yScale = d3.scaleLinear()
     .range([255, 0])
@@ -218,6 +256,7 @@ var yScale = d3.scaleLinear()
 var line = d3.line()
     .x(function (d, i) { return xScale(i); })
     .y(function (d, i) { return yScale(d); });
+
 
 function visualize(audioElement) {
 
@@ -232,16 +271,17 @@ function visualize(audioElement) {
     audioSrc.connect(analyser);
     audioSrc.connect(ctx.destination);
 
-    waveform.attr('width', svgWidth)
+    // waveform.attr('width', svgWidth)
     // update the svg
-    svg.selectAll('rect')
+
+    frequencyGroup.selectAll('rect')
         .data(frequencyData)
         .enter()
         .append('rect')
         .attr('x', function (d, i) {
-            return i * (svgWidth / frequencyData.length);
+            return i * (svgParentWidth / frequencyData.length);
         })
-        .attr('width', svgWidth / frequencyData.length - barPadding);
+        .attr('width', svgParentWidth / frequencyData.length - barPadding);
 
 
 
@@ -250,12 +290,12 @@ function visualize(audioElement) {
     renderChart();
 }
 
-function createSvg(parent, height, width) {
-    return d3.select(parent)
-        .append('svg')
-        .attr('height', height)
-        .attr('width', width);
-}
+// function createSvg(parent, height, width) {
+//     return d3.select(parent)
+//         .append('svg')
+//         .attr('height', height)
+//         .attr('width', width);
+// }
 
 
 
@@ -270,10 +310,10 @@ function renderChart() {
     // console.log(frequencyData)
 
     // Update d3 chart with new data.
-    svg.selectAll('rect')
+    frequencyGroup.selectAll('rect')
         .data(frequencyData)
         .attr('y', function (d) {
-            return svgHeight - d;
+            return svgPathHeight - d;
         })
         .attr('height', function (d) {
             return d;
@@ -282,7 +322,7 @@ function renderChart() {
             return 'rgb(' + d + ', 40, 50)';
         });
 
-    waveform.select("path")
+    waveformGroup.select('path')
         .datum(waveformData)
-        .attr("d", line);
+        .attr('d', line);
 }
