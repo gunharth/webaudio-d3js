@@ -20,33 +20,25 @@ function removeAllAudioTags() {
 }
 
 
-// let svg = $('#svg');
-
 function appendAudioTag(id, audioURL) {
     let audio = document.createElement('audio');
     audio.controls = true;
     audio.src = audioURL;
     $('#' + id).append(audio);
     audio.onplaying = function () {
-        // audioIsPlaying = true;
-        // if(visibilityCheckbox.checked) {
+        if (svgParent.is(':visible')) {
             visualize(audio);
-        // }
+        }
     };
     audio.play();
 }
 
 
 visibilityCheckbox.change(function () {
-    // alert($(this).is(':checked'));
     if ($(this).is(':checked')) {
-        // document.getElementById('freq').style.display = 'block';
-        // document.getElementById('waveform').style.display = 'block';
-        svgWidth = svgParent.width();
-        //svg = createSvg('#freq', svgHeight, svgWidth);
+        svgParent.slideDown();
     } else {
-        // document.getElementById('freq').style.display = 'none';
-        // document.getElementById('freq').children[0].remove();
+        svgParent.slideUp();
     }
 });
 
@@ -59,13 +51,13 @@ async function importAudio(id, file) {
 
     ctx = ctx || new AudioContext();
     globalAudioBuffer = await ctx.decodeAudioData(arrayBuffer);
-    let source = ctx.createBufferSource();
-    source.buffer = globalAudioBuffer;
-    var analyser = ctx.createAnalyser();
+    // let source = ctx.createBufferSource();
+    // source.buffer = globalAudioBuffer;
+    // var analyser = ctx.createAnalyser();
 
-    // Bind our analyser to the media element source.
-    source.connect(analyser);
-    source.connect(ctx.destination);
+    // // Bind our analyser to the media element source.
+    // source.connect(analyser);
+    // source.connect(ctx.destination);
 }
 
 let maxFileSizeMegabytes = 100;
@@ -74,7 +66,7 @@ function loadAudioFile(file) {
     removeAllAudioTags();
 
     if (file.size > maxFileSizeMegabytes * 1000 * 1000) {
-        alert("Sorry, that file is too big. Your audio file needs to be under " + maxFileSizeMegabytes + " megabytes.");
+        alert('Sorry, that file is too big. Your audio file needs to be under ' + maxFileSizeMegabytes + ' megabytes.');
         return;
     }
 
@@ -90,12 +82,12 @@ function loadAudioFile(file) {
             globalAudioBuffer = await ctx.decodeAudioData(arrayBuffer);
 
         } catch (e) {
-            alert("Sorry, either that's not an audio file, or it's not an audio format that's supported by your browser. Most modern browsers support: wav, mp3, mp4, ogg, webm, flac. You should use Chrome or Firefox if you want the best audio support, and ensure you're using the *latest version* of your browser of choice. Chrome and Firefox update automatically, but you may need to completely close down the browser and potentially restart your device to 'force' it to update itself to the latest version.");
+            alert('Sorry, this is not an audio file');
         }
-    }
+    },
     reader.onerror = function (e) {
-        alert("There was an error reading that file: " + JSON.stringify(e));
-    }
+        alert('There was an error reading that file: ' + JSON.stringify(e));
+    };
 
     reader.readAsArrayBuffer(file);
 
@@ -112,14 +104,14 @@ async function recordFromMicrophone() {
     currentlyRecording = true;
 
     // Change, button, start timer:
-    var micButtonCssText = $("#microphone-button").style.cssText;
-    $("#microphone-button").style.cssText = "background:#e71010; color:white;";
-    $("#microphone-button .start").style.cssText = "display:none;"
-    $("#microphone-button .mic-enable").style.cssText = "display:initial;"
+    var micButtonCssText = $('#microphone-button').style.cssText;
+    $('#microphone-button').style.cssText = 'background:#e71010; color:white;';
+    $('#microphone-button .start').style.cssText = 'display:none;';
+    $('#microphone-button .mic-enable').style.cssText = 'display:initial;';
 
     let chunks = [];
     let stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
-    let mediaRecorder = new MediaRecorder(stream, { mimeType: "video/webm" });
+    let mediaRecorder = new MediaRecorder(stream, { mimeType: 'video/webm' });
 
     mediaRecorder.start();
     let timerInterval;
@@ -128,20 +120,20 @@ async function recordFromMicrophone() {
     mediaRecorder.onstart = function () {
         console.log('Started, state = ', mediaRecorder.state);
 
-        $("#microphone-button .mic-enable").style.cssText = "display:none;";
-        $("#microphone-button .stop").style.cssText = "display:initial;";
+        $('#microphone-button .mic-enable').style.cssText = 'display:none;';
+        $('#microphone-button .stop').style.cssText = 'display:initial;';
 
         var seconds = 0;
-        $("#microphone-button .time").innerText = seconds;
-        timerInterval = setInterval(() => { seconds++; $("#microphone-button .time").innerText = seconds; }, 1000);
+        $('#microphone-button .time').innerText = seconds;
+        timerInterval = setInterval(() => { seconds++; $('#microphone-button .time').innerText = seconds; }, 1000);
 
 
         let stopFn = function () {
             mediaRecorder.stop();
-            $("#microphone-button").removeEventListener("click", stopFn);
+            $('#microphone-button').removeEventListener('click', stopFn);
             clearTimeout(maxLengthTimeout);
         };
-        $("#microphone-button").addEventListener("click", stopFn)
+        $('#microphone-button').addEventListener('click', stopFn);
         let maxLengthTimeout = setTimeout(stopFn, maxRecordingSeconds * 1000);
 
     };
@@ -162,20 +154,19 @@ async function recordFromMicrophone() {
         try {
             ctx = ctx || new AudioContext();
             globalAudioBuffer = await ctx.decodeAudioData(arrayBuffer);
-            // $("#audio-load-success").style.display = "flex";
         } catch (e) {
-            alert("Sorry, your browser doesn't support a crucial feature needed to allow you to record using your device's microphone. You should use Chrome or Firefox if you want the best audio support, and ensure you're using the *latest version* of your browser of choice. Chrome and Firefox update automatically, but you may need to completely close down the browser and potentially restart your device to 'force' it to update itself to the latest version.");
+            alert('Sorry, your browser');
         }
 
         // Change, button, end timer:
-        $("#microphone-button").style.cssText = micButtonCssText;
-        $("#microphone-button .start").style.cssText = "display:initial;";
-        $("#microphone-button .stop").style.cssText = "display:none;";
+        $('#microphone-button').style.cssText = micButtonCssText;
+        $('#microphone-button .start').style.cssText = 'display:initial;';
+        $('#microphone-button .stop').style.cssText = 'display:none;';
         clearInterval(timerInterval);
 
         currentlyRecording = false;
 
-    }
+    };
 
 
 }
@@ -183,11 +174,11 @@ async function recordFromMicrophone() {
 async function loadTransform(e, transformName, ...transformArgs) {
 
     if (currentlyRecording) {
-        alert("You're currently recording a clip using your microphone. Please click the red \"stop recording\" button at the top of the page to finalize the recording, then you can click one of the voice transformers to get your transformed audio file.");
+        alert('You\'re currently recording');
         return;
     }
 
-    let outputAudioBuffer = await window[transformName + "Transform"](globalAudioBuffer, ...transformArgs);
+    let outputAudioBuffer = await window[transformName + 'Transform'](globalAudioBuffer, ...transformArgs);
 
     let outputWavBlob = await audioBufferToWaveBlob(outputAudioBuffer);
     audioURL = URL.createObjectURL(outputWavBlob);
@@ -200,20 +191,11 @@ async function loadTransform(e, transformName, ...transformArgs) {
 // Visualisation
 var frequencyData;
 var waveformData;
-// var svgHeight = 255;
 var svgHeight = 511;
 var svgParentWidth = svgParent.width();
 var svgPathHeight = Math.floor(svgHeight / 2);
-// var svgWidth = 300; // max is 255 in frequenzy data
 var barPadding = 1;
 var analyser;
-// var svg;
-var audioSrc;
-
-
-// let waveformWidth = 200;
-
-// var svgParentWidth = Math.ceil(svgParentWidth);
 
 let svg = d3.select('#svg')
     .attr('width', svgParentWidth)
@@ -234,16 +216,10 @@ frequencyGroup
     .attr('width', svgParentWidth)
     .attr('height', svgPathHeight);
 
-svg.select('.waveform')
+waveformGroup
     .attr('width', svgParentWidth)
     .attr('height', svgPathHeight)
     .attr('transform', 'translate(0, ' + svgPathHeight + ')');
-
-// let waveform = d3.select('#wave')
-//     .attr('width', waveformWidth)
-//     .attr('height', 255);
-
-
 
 var xScale = d3.scaleLinear()
     .range([0, svgParentWidth])
@@ -261,7 +237,7 @@ var line = d3.line()
 function visualize(audioElement) {
 
     // bind the audioElement to the AudioContext
-    audioSrc = ctx.createMediaElementSource(audioElement);
+    let audioSrc = ctx.createMediaElementSource(audioElement);
     analyser = ctx.createAnalyser();
 
     frequencyData = new Uint8Array(analyser.frequencyBinCount/4);
@@ -270,9 +246,6 @@ function visualize(audioElement) {
     // Bind our analyser to the media element source.
     audioSrc.connect(analyser);
     audioSrc.connect(ctx.destination);
-
-    // waveform.attr('width', svgWidth)
-    // update the svg
 
     frequencyGroup.selectAll('rect')
         .data(frequencyData)
@@ -283,26 +256,13 @@ function visualize(audioElement) {
         })
         .attr('width', svgParentWidth / frequencyData.length - barPadding);
 
-
-
-
     // Run the loop
     renderChart();
 }
 
-// function createSvg(parent, height, width) {
-//     return d3.select(parent)
-//         .append('svg')
-//         .attr('height', height)
-//         .attr('width', width);
-// }
-
-
-
 // Continuously loop and update chart with frequency data.
-var request;
 function renderChart() {
-    request = requestAnimationFrame(renderChart);
+    requestAnimationFrame(renderChart);
     // Copy frequency data to frequencyData array.
     analyser.getByteFrequencyData(frequencyData);
     analyser.getFloatTimeDomainData(waveformData);
