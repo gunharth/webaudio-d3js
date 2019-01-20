@@ -4,22 +4,22 @@
 ### 1. <audio> Tag
 Feeds an existing audio element into the AudioContext.
 ```
-let audioElement = document.querySelector('audio');
-var audioCtx = new AudioContext();
-var source = audioCtx.createMediaElementSource(audioElement);
+const audioElement = document.querySelector('audio');
+const audioCtx = new AudioContext();
+const source = audioCtx.createMediaElementSource(audioElement);
 source.connect(audioCtx.destination);
 ```
 ### 2. Load audio with AJAX
 The following creates a JavaScript promise fetching an audio file from a URL into an arrayBuffer. From this arrayBuffer we can either create a new Blob to integrate the audio into an audio Element on the site or decode the audio for passing it on as the source to the audioContext.
 ```
 async function loadAudioWithAjax() {
-    let arrayBuffer = await (await fetch('audio.ogg')).arrayBuffer();
+    const arrayBuffer = await (await fetch('audio.ogg')).arrayBuffer();
 
     audioURL = URL.createObjectURL(new Blob([arrayBuffer]));
 
-    var audioCtx = new AudioContext();
-    let audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
-    let source = audioCtx.createBufferSource();
+    const audioCtx = new AudioContext();
+    const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
+    const source = audioCtx.createBufferSource();
     source.buffer = audioBuffer;
     source.connect(audioCtx.destination);
 }

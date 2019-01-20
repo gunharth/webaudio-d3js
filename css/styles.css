@@ -1,6 +1,6 @@
 body {
     font-family: 'Roboto', sans-serif;
-    line-height: 2em;
+    line-height: 1em;
     margin: 0;
 }
 
@@ -10,6 +10,7 @@ body {
 
 h2 {
     margin: 3px 0;
+    font-size: 1.3em;
 }
 
 .grid-container-sources {
@@ -20,7 +21,7 @@ h2 {
     text-align: center;
     align-items: center;
     background: #ddd;
-    min-height: 140px;
+    min-height: 110px;
     padding: 10px;
     padding-top: 11px;
 }
@@ -33,7 +34,7 @@ h2 {
     text-align: center;
     align-items: center;
     background: #ccc;
-    min-height: 140px;
+    min-height: 110px;
     padding: 10px;
 }
 
@@ -45,6 +46,7 @@ h2 {
 
 audio {
     width: 100%;
+    height: 46px;
     border-radius: 20px;
 }
 

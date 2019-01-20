@@ -64,7 +64,6 @@ async function recordFromMicrophone() {
 
     mediaRecorder.ondataavailable = function (e) { chunks.push(e.data); };
     mediaRecorder.onstart = function () {
-        console.log('Started, state = ', mediaRecorder.state);
 
         microphoneButton.find('.mic-enable').hide();
         microphoneButton.find('.stop').show();
@@ -86,7 +85,6 @@ async function recordFromMicrophone() {
     mediaRecorder.onwarning = function (e) { console.log('Warning: ', e); };
 
     mediaRecorder.onstop = async function () {
-        console.log('Stopped, state = ' + mediaRecorder.state);
 
         let blob = new Blob(chunks, { type: mediaRecorder.mimeType });//+'; codecs=opus' });//
         audioURL = URL.createObjectURL(blob);

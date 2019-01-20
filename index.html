@@ -20,6 +20,13 @@
             <button class="sourceButton" onclick="importAudio('piano','audio/piano.wav');">Piano</button>
         </div>
         <div>
+            <div style="cursor:pointer; position:relative; overflow:hidden; display:inline-block; vertical-align:top;">
+                <button class="sourceButton">Upload</button>
+                <input accept="audio/*,video/*" onchange="loadAudioFile(this.files[0]);" style="cursor:pointer; z-index:5; position:absolute; top:0; left:0; bottom:0; right:0; opacity:0;"
+                    type="file">
+            </div>
+        </div>
+        <div>
             <button class="sourceButton" onclick="importAudio('guni','audio/guni.ogg');">Guni</button>
         </div>
         <div>
@@ -29,18 +36,12 @@
                 <span class="stop" style="display:none;">(<span class="time"></span>) Stop</span>
             </button>
         </div>
-        <div>
-            <div style="cursor:pointer; position:relative; overflow:hidden; display:inline-block; vertical-align:top;">
-                <button class="sourceButton">Upload</button>
-                <input accept="audio/*,video/*" onchange="loadAudioFile(this.files[0]);" style="cursor:pointer; z-index:5; position:absolute; top:0; left:0; bottom:0; right:0; opacity:0;" type="file">
-            </div>
-        </div>
 
         <div></div>
-        <div id="recording-piano"><!--<audio controls src="audio/piano.wav">--></audio></div>
+        <div id="recording-piano"><audio controls src="audio/piano.wav"></audio></div>
+        <div id="recording-upload"></div>
         <div id="recording-guni"></div>
         <div id="recording-mic"></div>
-        <div id="recording-upload"></div>
     </div>
 
     <div class="grid-container">
@@ -67,13 +68,11 @@
         <h2>3. Visualise </h2>
     </div>
 
-    <div id="svg-parent" style="width: 100%; display: none;">
-        <svg id="svg">
+    <div id="svg-parent" style="width: 100%; display: none;"><svg id="svg">
             <g class="frequency"></g>
             <!-- <line x1="0" y1="0" x2="300" y2="0" stroke="gray" stroke-width="5" /> -->
             <g class="waveform"><path></path></g>
-        </svg>
-    </div>
+        </svg></div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/d3/5.7.0/d3.min.js"></script>
     <script src="js/audio/helpers.js"></script>
