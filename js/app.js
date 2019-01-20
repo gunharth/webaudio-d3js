@@ -1,8 +1,8 @@
 // audio variables
 const AudioContext = window.AudioContext || window.webkitAudioContext;
-let ctx; // created audio context
-let globalAudioBuffer = null; // holds all audio buffers from audio sources
-let audioURL; // audio url
+let audioCtx; // created audio context
+let audioSource = null; // holds all audio buffers from audio sources
+let audioURL = ''; // audio url
 // ui variables
 let svgParent = $('#svg-parent');
 // visualisation
@@ -16,7 +16,7 @@ let svgPathHeight = Math.floor(svgHeight / 2);
 // upload
 let maxFileSizeMegabytes = 100;
 
-// Preloading the piano into an audio context on page load throws an error in Chrome
+// Preloading the piano into an audio context on page load throws is prohibited in Chrome
 // Thus we work around by using also the ajax load method
 // the visualisation section outlines loading existing audio sources from tags
 
@@ -28,15 +28,15 @@ async function importAudio(id, file) {
     audioURL = URL.createObjectURL(new Blob([arrayBuffer]));
     appendAudioTag('recording-' + id, audioURL);
 
-    ctx = ctx || new AudioContext();
-    globalAudioBuffer = await ctx.decodeAudioData(arrayBuffer);
-    // let source = ctx.createBufferSource();
-    // source.buffer = globalAudioBuffer;
-    // var analyser = ctx.createAnalyser();
+    audioCtx = audioCtx || new AudioContext();
+    audioSource = await audioCtx.decodeAudioData(arrayBuffer);
+    // let source = audioCtx.createBufferSource();
+    // source.buffer = audioSource;
+    // var analyser = audioCtx.createAnalyser();
 
     // // Bind our analyser to the media element source.
     // source.connect(analyser);
-    // source.connect(ctx.destination);
+    // source.connect(audioCtx.destination);
 }
 
 // Record button: record audio with the mic
@@ -94,8 +94,8 @@ async function recordFromMicrophone() {
         let arrayBuffer = await (await fetch(audioURL)).arrayBuffer();
 
         try {
-            ctx = ctx || new AudioContext();
-            globalAudioBuffer = await ctx.decodeAudioData(arrayBuffer);
+            audioCtx = audioCtx || new AudioContext();
+            audioSource = await audioCtx.decodeAudioData(arrayBuffer);
         } catch (e) {
             alert('Sorry, your browser');
         }
@@ -124,8 +124,8 @@ function loadAudioFile(file) {
             audioURL = URL.createObjectURL(await new Blob([arrayBuffer]));
             appendAudioTag('recording-upload', audioURL);
 
-            ctx = ctx || new AudioContext();
-            globalAudioBuffer = await ctx.decodeAudioData(arrayBuffer);
+            audioCtx = audioCtx || new AudioContext();
+            audioSource = await audioCtx.decodeAudioData(arrayBuffer);
         } catch (e) {
             alert('Sorry, this is not an audio file');
         }
@@ -145,7 +145,7 @@ async function loadTransform(e, transformName, ...transformArgs) {
         return;
     }
 
-    let outputAudioBuffer = await window[transformName + 'Transform'](globalAudioBuffer, ...transformArgs);
+    let outputAudioBuffer = await window[transformName + 'Transform'](audioSource, ...transformArgs);
 
     let outputWavBlob = await audioBufferToWaveBlob(outputAudioBuffer);
     audioURL = URL.createObjectURL(outputWavBlob);
@@ -195,15 +195,15 @@ let waveLine = d3.line()
 function visualize(audioElement) {
 
     // bind the audioElement to the AudioContext
-    let audioSrc = ctx.createMediaElementSource(audioElement);
-    analyser = ctx.createAnalyser();
+    let audioSrc = audioCtx.createMediaElementSource(audioElement);
+    analyser = audioCtx.createAnalyser();
 
     frequencyData = new Uint8Array(analyser.frequencyBinCount / 4);
     waveformData = new Float32Array(analyser.fftSize);
 
     // Bind our analyser to the media element source.
     audioSrc.connect(analyser);
-    audioSrc.connect(ctx.destination);
+    audioSrc.connect(audioCtx.destination);
 
     frequencyGroup.selectAll('rect')
         .data(frequencyData)
