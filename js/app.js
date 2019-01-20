@@ -197,6 +197,7 @@ function visualize(audioElement) {
     // bind the audioElement to the AudioContext
     let audioSrc = audioCtx.createMediaElementSource(audioElement);
     analyser = audioCtx.createAnalyser();
+    // analyser.fftSize = 256;
 
     frequencyData = new Uint8Array(analyser.frequencyBinCount / 4);
     waveformData = new Float32Array(analyser.fftSize);
@@ -224,6 +225,7 @@ function renderChart() {
 
     analyser.getByteFrequencyData(frequencyData);
     analyser.getFloatTimeDomainData(waveformData);
+    console.log(waveformData);
 
     // Update d3 chart with new data.
     frequencyGroup.selectAll('rect')
