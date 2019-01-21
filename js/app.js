@@ -149,7 +149,10 @@ async function loadTransform(e, transformName, ...transformArgs) {
 
     let outputWavBlob = await audioBufferToWaveBlob(outputAudioBuffer);
     audioURL = URL.createObjectURL(outputWavBlob);
-    if (!document.getElementById(transformName).hasChildNodes()) {
+    if (document.getElementById(transformName).hasChildNodes()) {
+        $('#'+transformName).empty();
+        appendAudioTag(transformName, audioURL);
+    } else {
         appendAudioTag(transformName, audioURL);
     }
 }
@@ -225,7 +228,7 @@ function renderChart() {
 
     analyser.getByteFrequencyData(frequencyData);
     analyser.getFloatTimeDomainData(waveformData);
-    console.log(waveformData);
+    // console.log(waveformData);
 
     // Update d3 chart with new data.
     frequencyGroup.selectAll('rect')
