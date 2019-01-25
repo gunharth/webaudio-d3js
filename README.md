@@ -119,8 +119,4 @@ Chrome and Opera will record mono channel Opus (default) and pcm (wav, uncompres
 
 Firefox will record mono Opus audio at 48kHz in .ogg containers (.webm is supported starting with Firefox 63). Firefox used Vorbis for audio recording in the 1st implementations but it moved to Opus since.  
 
-No requirements to make extra HTTP request nor load external libraries
-
-Demo: todo
-
 Data stream saved as a Blob in browser cache. Chrome uses webm and opus audio codec.
